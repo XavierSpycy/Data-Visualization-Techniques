@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<head>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<style> /* set the CSS */
+    h1 {
+      text-align: center;
+    }
+    h2 {
+      text-align: center;
+      color: grey
+    }
+    h3 {
+      text-align: center;
+      color:blueviolet
+    }
+    </style>
+<body>
+    <h1>Major Cities in States of Australia</h1>
+    <h2>Radial Tree Graph</h2>
+    <h3>Data Source: 2021 Census of Population by the Australian Bureau of Statistics</h3>
+    <svg></svg>
+</body>
+
+<script>
+	
+	d3.json("population-in-australia.json")
+    .then(function(nodeData){
+
+    // Variables
+    var width = window.innerWidth;
+    var height = window.innerHeight;
+    var radius = Math.min(width, height) / 2;
+    var color = d3.scaleOrdinal(['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#ffff33','#a65628','#f781bf']);
+
+    // Create primary <g> element
+    var g = d3.select('svg')
+        .attr('width', width)
+        .attr('height', height)
+        .append('g')
+        .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
+
+    // Data strucure
+    var partition = d3.partition()
+        .size([2 * Math.PI, radius]);
+
+    // Find data root
+    var root = d3.hierarchy(nodeData)
+        .sum(function (d) { return d.size});
+
+    // Size arcs
+    partition(root);
+    var arc = d3.arc()
+        .startAngle(function (d) { return d.x0 })
+        .endAngle(function (d) { return d.x1 })
+        .innerRadius(function (d) { return d.y0 })
+        .outerRadius(function (d) { return d.y1 });
+
+    // Put it all together
+    g.selectAll('path')
+        .data(root.descendants())
+        .enter().append('path')
+        .attr("display", function (d) { return d.depth ? null : "none"; })
+        .attr("d", arc)
+        .style('stroke', '#fff')
+        .style("opacity", "0.8")
+        .style("fill", function (d) { return color((d.children ? d : d.parent).data.name); })
+    //
+    g.append("text")
+        .attr("x", 155)
+        .attr("y", -80)  
+        .attr("font-size", "24px")
+        .attr("font-family", "Arial")
+        .text("NSW"); 
+    //
+    g.append("text")
+        .attr("x", 30)
+        .attr("y", 200)  
+        .attr("font-size", "24px")
+        .attr("font-family", "Arial")
+        .text("VIC"); 
+    //
+    g.append("text")
+        .attr("x", -220)
+        .attr("y", 80)  
+        .attr("font-size", "24px")
+        .attr("font-family", "Arial")
+        .text("QLD");
+    //
+    g.append("text")
+        .attr("x", -195)
+        .attr("y", -120)  
+        .attr("font-size", "24px")
+        .attr("font-family", "Arial")
+        .text("WA");
+    //
+    g.append("text")
+        .attr("x", -90)
+        .attr("y", -200)  
+        .attr("font-size", "24px")
+        .attr("font-family", "Arial")
+        .text("SA");
+    //
+    g.append("text")
+        .attr("x", 100)
+        .attr("y", -300)  
+        .attr("font-size", "20px")
+        .attr("font-family", "Arial")
+        .text("Sydney");
+    //
+    g.append("text")
+        .attr("x", 190)
+        .attr("y", 250)  
+        .attr("font-size", "20px")
+        .attr("font-family", "Arial")
+        .text("Melbourne");
+    //
+    g.append("text")
+        .attr("x", -280)
+        .attr("y", 257)  
+        .attr("font-size", "20px")
+        .attr("font-family", "Arial")
+        .text("Brisbane");
+})
+</script>

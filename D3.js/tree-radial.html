@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<body>
+  <h1 style="text-align: center; position: absolute; top: 0; left: 50%; transform: translateX(-50%);">Major Cities in States of Australia</h1>
+  <h2 style="text-align: center; color: grey; position: absolute; top: 80px; left: 50%; transform: translateX(-50%);">Radial Tree Graph</h2>
+  <h3 style="text-align: center; color: blueviolet; position: absolute; top: 120px; left: 50%; transform: translateX(-50%);">Data Source: 2021 Census of Population by the Australian Bureau of Statistics</h3>
+</body>
+<style> /* set the CSS */
+.node circle {
+  fill: #fff;
+  stroke: steelblue;
+  stroke-width: 3px;
+}
+.node text { font: 12px sans-serif; }
+.node--internal text {
+  text-shadow: 0 1px 0 #fff, 0 -1px 0 #fff, 1px 0 0 #fff, -1px 0 0 #fff;
+}
+.link {
+  fill: none;
+  stroke: #ccc;
+  stroke-width: 2px;
+}
+</style>
+<body>
+<!-- load the d3.js library -->    	
+<script src="//d3js.org/d3.v7.min.js"></script>
+<script>
+// set the dimensions and margins of the diagram
+var margin = {top: 10, right: 150, bottom: 30, left: 90},
+    width = margin.right + margin.left + 1000,
+    height = margin.bottom + margin.top + 1200;
+var link, node;
+// declares a tree layout and assigns the size
+var treemap = d3.tree()
+    .size([2 * Math.PI, 400])
+    .separation((a, b) => (a.parent == b.parent ? 1 : 2) / a.depth);
+// loads tree data
+d3.json("population-in-australia-short-label.json")
+    .then(function(treeData){
+    //  assigns the data to a hierarchy using parent-child relationships
+    var nodes = d3.hierarchy(treeData, function(d) {
+        return d.children;
+    });
+    // maps the node data to the tree layout
+    nodes = treemap(nodes);
+    // append the svg object to the body of the page
+    // appends a 'group' element to 'svg'
+    // moves the 'group' element to the top left margin
+    var svg = d3.select("body").append("svg")
+        .attr("width", (width + margin.left + margin.right)*1.5)
+        .attr("height", (height + margin.top + margin.bottom)*1.5),
+        g = svg.append("g")
+        .attr("transform",
+                "translate(" + (margin.left + width/2+770) + "," + (height/2 - margin.bottom - margin.top + 200) + ")");
+    // adds the links between the nodes
+    link = g.selectAll(".link")
+        .data( nodes.links())
+        .enter().append("path")
+        .attr("class", "link")
+        .attr("d", d3.linkRadial()
+        .angle(d => d.x)
+        .radius(d => d.y));
+    // adds each node as a group
+    node = g.selectAll(".node")
+        .data(nodes.descendants())
+        .enter().append("g")
+        .attr("transform", d => `
+        rotate(${d.x * 180 / Math.PI - 90})
+        translate(${d.y},0)
+      `);
+    // adds the circle to the node
+    node.append("circle")
+        .attr("r", d => Math.sqrt(d.data.size)/250)
+        .style("fill", "blue")
+        .style("opacity", "0.7");
+    // adds the text to the node
+    node.append("text")
+        .attr("dy", "0.31em")
+        .attr("x", d => d.x < Math.PI === !d.children ? 6 : -6)
+        .attr("text-anchor", d => d.x < Math.PI === !d.children ? "start" : "end")
+        .attr("transform", d => d.x >= Math.PI ? "rotate(180)" : null)
+        .text(d => {
+        let name = d.data.name;
+        if (name.includes("and")) {
+          name = name.replace("and", "and<br>");
+        }
+        return name;
+      })
+      .html((d) => {
+        let name = d.data.name;
+        if (name.includes("and")) {
+          let nameParts = name.split("and");
+          return `${nameParts[0]}and<br>${nameParts[1]}`;
+        } else { return name; } })
+      .clone(true).lower()
+      .attr("stroke", "white");
+    // 
+    var legendData = [
+    { size: Math.sqrt(1000000)/250, label: '1.0M' },
+    { size: Math.sqrt(2000000)/250, label: '2.0M' },
+    { size: Math.sqrt(3000000)/250, label: '3.0M' },
+    { size: Math.sqrt(4000000)/250, label: '4.0M' },
+    { size: Math.sqrt(5000000)/250, label: '5.0M' },
+    { size: Math.sqrt(6000000)/250, label: '6.0M' },
+    { size: Math.sqrt(7000000)/250, label: '7.0M' },
+    { size: Math.sqrt(8000000)/250, label: '8.0M' },
+    ];
+  function createLegend(data) {
+  // select the div where you want to add the legend
+  var legendDiv = d3.select("body").append("div")
+    .attr("class", "legend")
+    .style("position", "absolute")
+    .style("left", "800px")
+    .style("top", "500px");
+  // add circles and labels to the legend
+  var legend = legendDiv.selectAll(".legend-item")
+    .data(data)
+    .enter().append("div")
+      .attr("class", "legend-item");
+
+  legend.append("div")
+    .attr("class", "legend-circle")
+    .style("background-color",  "blue")
+    .style("opacity", "0.7")
+    .style("width", function(d) { return d.size*2 + "px"; })
+    .style("height", function(d) { return d.size*2 + "px"; })
+    .style("border-radius", function(d) { return d.size + "px"; });
+  legend.append("div")
+    .attr("class", "legend-label")
+    .text(function(d) { return d.label; });
+}
+// create the legend
+  createLegend(legendData);
+
+});
+</script>
+</body>
