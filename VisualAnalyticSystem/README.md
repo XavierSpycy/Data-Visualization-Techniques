@@ -2,7 +2,7 @@
 This project is designed to generate a streamlined .html file for the easy deployment of an interactive visual analytic system. Written in Python, it launches a web browser to showcase the results upon execution. The project leverages several Python packages including Pandas for I/O and preprocessing operations, along with Matplotlib, NetworkX, and Plotly for data visualization. Furthermore, D3.js, a JavaScript library, is utilized to generate extraordinary visualizations.
 
 #Python files contents
-'**VASys.py**': the main program.
+'**main.py**': the main program.
 
 '**preprocess.py**': Utilizes Pandas to read the original dataset and generates a subset which is subsequently stored as a .csv file or a smaller dataframe from the original dataset.
 
